@@ -1,0 +1,28 @@
+---
+- name: Testing playbooks
+  hosts: kubeservers
+  gather_facts: true
+  vars:
+    - users:
+       - devops
+       - dev
+       - admin
+  tasks:
+    - name: Create a testing group
+      group: 
+        name: testing
+        state: present
+    - name: Create user devops
+      loop: "{{ users  }}"
+      user:
+        name: "{{ item  }}"
+        groups:
+          - testing
+        state: present
+      when: ansible_facts["distribution"] == "Ubuntu"
+    - name: Copying template
+      template:
+        src: "template.j2"
+        dest: "/home/thomas/template.txt"
+      
+
