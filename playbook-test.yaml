@@ -3,26 +3,32 @@
   hosts: kubeservers
   gather_facts: true
   vars:
-    - users:
-       - devops
-       - dev
-       - admin
+    users:
+      - devops
+      - dev
+      - admin
+  pre_tasks:
+    - name: Fail if not Ubuntu or correct system
+      ansible.builtin.fail:
+        msg: This script can only be executed on a Ubuntu system in installed kube-master-*.
+      when: ansible_facts["distribution"] != "Ubuntu" or ansible_facts["fqdn"] is not match("^kube-master-*")
   tasks:
     - name: Create a testing group
-      group: 
+      ansible.builtin.group:
         name: testing
         state: present
     - name: Create user devops
-      loop: "{{ users  }}"
-      user:
-        name: "{{ item  }}"
+      loop: "{{ users }}"
+      ansible.builtin.user:
+        name: "{{ item }}"
         groups:
           - testing
         state: present
       when: ansible_facts["distribution"] == "Ubuntu"
     - name: Copying template
-      template:
+      ansible.builtin.template:
         src: "template.j2"
         dest: "/home/thomas/template.txt"
-      
-
+        mode: "0600"
+        owner: root
+        group: root
